@@ -73,5 +73,5 @@ At this moment django had sent a request to the server and it started to process
 
 You can also delete the stream with a Trash button in the upper right corner.
 
-Here is a small demo of the working code: [Link](https://disk.yandex.ru/d/UnGKyR7L65K8NQ)
+Code Safety is yet TBD. (Link Removed)
 
