@@ -10,8 +10,7 @@ For that I use the combination of the following features:
 * For audio tagging I use the code from [this repository](https://github.com/qiuqiangkong/audioset_tagging_cnn)
 * For chat sentiment analysis I use transformers, same as in [this tutorial](https://huggingface.co/transformers/quicktour.html)
 * For movement scoring I use the approach similar to the approach I proposed in [this repository](https://github.com/artkulak/workout-movement-counting)
-
-Those features are extracted in real time for 10 second clips, after that they are passed to the metamodel, which predicts the probability of the clip to be a highlight. As the metamodel I chose Logistic Regression, because it is fast and easily interpritable! Here are the feature importances of the final meta model:
+  the Dense Optical Flow algorithm with a simple CNN network written in PyTorch. As you can see, it is pretty easy to get the idea of what one push-up is, if we look at how frames are converted to Dense Optical Flow representation in my algorithm. Thus, Dense Optical Flow converts frames to color coded representation, and CNN solves a multiclass problem, which is to classify each frame as move down, move up or not a move. Those features are extracted in real time for 10 second clips, after that they are passed to the metamodel, which predicts the probability of the clip to be a highlight. As the metamodel I chose Logistic Regression, because it is fast and easily interpritable! Here are the feature importances of the final meta model:
 
 ![](images/feature_importances.png)
 
