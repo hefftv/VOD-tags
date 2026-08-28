@@ -21,12 +21,21 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 # See https://docs.djangoproject.com/en/3.1/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'bu7^yq=0g5p1od(njuq&82i-$s4_0shd)_#me5euopf5$o8e99'
+SECRET_KEY = os.environ.get(
+    'DJANGO_SECRET_KEY',
+    'bu7^yq=0g5p1od(njuq&82i-$s4_0shd)_#me5euopf5$o8e99',
+)
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = True
+DEBUG = os.environ.get('DJANGO_DEBUG', 'True').lower() in ('1', 'true', 'yes')
 
-ALLOWED_HOSTS = ['*']
+ALLOWED_HOSTS = [
+    host.strip()
+    for host in os.environ.get('DJANGO_ALLOWED_HOSTS', '*').split(',')
+    if host.strip()
+]
+
+DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 
 # Application definition
@@ -78,7 +87,10 @@ WSGI_APPLICATION = 'highlights.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'),
+        'NAME': os.environ.get(
+            'DJANGO_DB_PATH',
+            os.path.join(BASE_DIR, 'db.sqlite3'),
+        ),
     }
 }
 
@@ -110,8 +122,6 @@ LANGUAGE_CODE = 'en-us'
 TIME_ZONE = 'UTC'
 
 USE_I18N = True
-
-USE_L10N = True
 
 USE_TZ = True
 

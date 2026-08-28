@@ -1,13 +1,8 @@
+import os
+
+
 class Config:
-
-    #####################
-    # TWITCH CONFIG
-    #####################
-
-    client_id = 'TWITCH-CLIENT-ID' # twitch client_id for helix
-    secret_id = 'TWITCH-SECRET-ID' # twitch secret_id for helix
-    server_ip = '34.145.109.225' # ML server public ip
-    server_port = '5555' # ML server port
-
-
-    
+    client_id = os.environ.get('TWITCH_CLIENT_ID', '')
+    secret_id = os.environ.get('TWITCH_SECRET_ID', '')
+    server_ip = os.environ.get('ML_SERVER_HOST', '')
+    server_port = os.environ.get('ML_SERVER_PORT', '5555')
