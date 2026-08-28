@@ -16,11 +16,37 @@ For that I use the combination of the following features:
 
 To run the web app and the server follow the instructions below.
 
+## Documentation
+
+Full architecture, process flows, and deployment guides live in the project docs and GitHub Wiki:
+
+| Resource | Link |
+|----------|------|
+| **Docs index** | [`docs/README.md`](docs/README.md) |
+| **GitHub Wiki** | [hefftv/VOD-tags/wiki](https://github.com/hefftv/VOD-tags/wiki) *(publish with [`scripts/publish-wiki.sh`](scripts/publish-wiki.sh))* |
+| Architecture | [`docs/wiki/Architecture.md`](docs/wiki/Architecture.md) |
+| Process flow | [`docs/wiki/Process-Flow.md`](docs/wiki/Process-Flow.md) |
+| ML pipeline | [`docs/wiki/ML-Pipeline.md`](docs/wiki/ML-Pipeline.md) |
+| Deployment | [`docs/wiki/Deployment.md`](docs/wiki/Deployment.md) |
+| Configuration | [`docs/wiki/Configuration.md`](docs/wiki/Configuration.md) |
+
+### System overview
+
+```mermaid
+flowchart LR
+  User[User] --> Web[Django Web :8000]
+  Web -->|process_stream| ML[ML Server :5555]
+  ML -->|add_clip| Web
+  ML --> Storage[GCS or nginx clips]
+  User --> Storage
+  Web --> Twitch[Twitch Helix]
+  ML --> TwitchLive[Live Stream + Chat]
+```
 
 ## Repository structure
 
-* Branch `main` contains the code for the web app
-* Branch `Feature/server` contains the code for the server part
+* Branch `main` contains the web app and ML server
+* Branch `Feature/server` contains the original server-only history
 * Branch `Feature/metamodel` contains the code for training the metamodel
 * Branch `Feature/movement` contains some POC code for the movement model to work
 
@@ -51,27 +77,81 @@ To start the server in the root directory of the repository, enter the command:
 
 `python server.py`
 
-## Local containers (web app)
+## Deployment modes
+
+The original project targeted **GCP (GCE + public GCS bucket + gsutil)**. That path is still the **default** server behavior. Local and other cloud environments reuse the same code via env vars — nothing replaces GCP, it scaffolds off it.
+
+| Mode | Where | Clip storage | Web ↔ ML wiring |
+|------|-------|--------------|-----------------|
+| **GCP (original)** | 2× GCE VMs, firewall | `gsutil cp` → public GCS bucket | Public IPs in `server/config.py` or env |
+| **Local containers** | Docker/Podman Compose | `CLIP_STORAGE_BACKEND=local` + nginx `:8080` | Compose DNS (`ml-server`, `web`) |
+| **Cloud (generic)** | Any host/K8s | Keep `gcp` + GCS, or `local` + CDN/nginx | Set `WEBAPP_*` / `ML_SERVER_*` to service URLs |
+
+### GCP (original — unchanged behavior)
+
+1. Create two GCE instances (web + ML server) and open firewall for web port + ML `:5555`.
+2. Create a **public GCS bucket**; note the bucket name.
+3. Configure via env or `server/config.py` fields:
+
+| Original field | Env override |
+|----------------|--------------|
+| `google_cloud_storage_bucket_name` | `GCS_BUCKET_NAME` |
+| `webapp_public_ip` | `WEBAPP_PUBLIC_IP` |
+| `webapp_public_port` | `WEBAPP_PUBLIC_PORT` |
+| `nickname` / `oauth_token` / `secret_id` | `TWITCH_CHAT_NICKNAME` / `TWITCH_OAUTH_TOKEN` / `TWITCH_SECRET_ID` |
+
+4. Ensure `gsutil` is available on the ML VM (preinstalled on GCE with Cloud SDK).
+5. Run web on VM 1, `python server.py` from `server/` on VM 2.
+6. Clips upload to `gs://{bucket}/{clip}.mp4` and play at `https://storage.googleapis.com/{bucket}/{clip}.mp4`.
+
+`CLIP_STORAGE_BACKEND` defaults to **`gcp`** — no change required for existing GCP deploys.
+
+### Local containers (web app)
 
 Works with **Docker Compose** or **Podman Compose**. Copy env defaults, then bring the stack up with either engine:
 
 ```bash
 cp .env.example .env   # set TWITCH_* (optional); ML host optional
 
-# Docker
+# Web app only
 docker compose up --build
 
-# Podman (either form)
-podman compose up --build
-# or: podman-compose up --build
+# Full local stack (web + ML server + clip hosting)
+# Set ML_SERVER_HOST=ml-server in .env, plus Twitch credentials below.
+docker compose --profile full up --build
 ```
 
-Open http://localhost:8000. SQLite persists in the `sqlite_data` volume. Without `ML_SERVER_HOST`, the UI still runs; highlight generation needs an external ML server (Phase 2).
+| Service | URL | Profile |
+|---------|-----|---------|
+| Web app | http://localhost:8000 | default |
+| ML server | http://localhost:5555 | `full` |
+| Clip playback | http://localhost:8080 | `full` |
+
+Open http://localhost:8000. SQLite persists in the `sqlite_data` volume.
+
+**Web-only:** leave `ML_SERVER_HOST` blank — UI works, highlights are not generated.
+
+**Full stack:** set these in `.env`:
+- `CLIP_STORAGE_BACKEND=local`
+- `ML_SERVER_HOST=ml-server`
+- `TWITCH_CLIENT_ID` / `TWITCH_SECRET_ID` (Helix API for stream lookup)
+- `TWITCH_CHAT_NICKNAME` / `TWITCH_OAUTH_TOKEN` (IRC chat detector on ML server)
+- Target channel must be **live** on Twitch for recording to start
+
+Clips are written to a shared volume and served at `CLIP_PUBLIC_BASE_URL` (default `http://localhost:8080`).
+
+**Containerized GCP:** build ML image with gsutil support and keep `CLIP_STORAGE_BACKEND=gcp`:
+
+```bash
+docker build -f Dockerfile.ml --build-arg INSTALL_GCLOUD=true -t vod-tags-ml .
+# mount GOOGLE_APPLICATION_CREDENTIALS, set GCS_BUCKET_NAME + WEBAPP_PUBLIC_*
+```
 
 Notes for Podman:
-- Image is pulled as `docker.io/library/python:3.11-slim` and tagged `localhost/vod-tags-web:local`.
-- Rootless Podman is fine on port 8000; named volumes avoid SELinux bind-mount `:Z` issues.
+- Images use fully qualified names (`docker.io/library/...`) and local tags (`localhost/vod-tags-*:local`).
+- Rootless Podman is fine on ports 8000/8080/5555; named volumes avoid SELinux bind-mount `:Z` issues.
 - On Windows/macOS, start a Podman machine first (`podman machine start`).
+- The ML server image is large (TensorFlow + PyTorch) and targets Python 3.8.
 
 ## App overview
 
