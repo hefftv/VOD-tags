@@ -1,0 +1,23 @@
+# Compatible with Docker Compose and Podman Compose (podman compose / podman-compose).
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: localhost/vod-tags-web:local
+    ports:
+      - "8000:8000"
+    environment:
+      DJANGO_SECRET_KEY: ${DJANGO_SECRET_KEY:-change-me-to-a-random-string}
+      DJANGO_DEBUG: ${DJANGO_DEBUG:-True}
+      DJANGO_ALLOWED_HOSTS: ${DJANGO_ALLOWED_HOSTS:-*}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+      TWITCH_SECRET_ID: ${TWITCH_SECRET_ID:-}
+      ML_SERVER_HOST: ${ML_SERVER_HOST:-}
+      ML_SERVER_PORT: ${ML_SERVER_PORT:-5555}
+      DJANGO_DB_PATH: /app/webapp/data/db.sqlite3
+    volumes:
+      - sqlite_data:/app/webapp/data
+
+volumes:
+  sqlite_data:

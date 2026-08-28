@@ -1,0 +1,14 @@
+.git
+.gitignore
+.env
+**/__pycache__
+**/*.py[cod]
+**/.pytest_cache
+**/.mypy_cache
+images/
+experiments/
+*.md
+LICENSE
+links.txt
+webapp/db.sqlite3
+**/.DS_Store
