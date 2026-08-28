@@ -48,6 +48,7 @@ flowchart LR
 | `/` | GET/POST | User | Login / stream list |
 | `/add_stream/` | POST | User | Create stream, trigger ML |
 | `/add_clip/` | GET | ML server | Store highlight clip URL |
+| `/jobs/<job_id>` | GET | Operator | ML job status (artifact path, clip count) |
 | `/stream/<id>` | GET | User | View clips for a stream |
 | `/delete_stream/<user>/<link>` | GET | User | Remove stream + highlights |
 
@@ -75,7 +76,9 @@ No clip binary is stored in the DB; only URLs.
 | Endpoint | Method | Params | Response |
 |----------|--------|--------|----------|
 | `/health` | GET | — | `{"status": "ok"}` |
-| `/process_stream` | GET | `stream_link`, `user_name` | Long-running; starts pipeline |
+| `/process_stream` | GET | `stream_link`, `user_name` | `202` — starts background job |
+| `/jobs` | GET | — | List active jobs |
+| `/jobs/<job_id>` | GET | — | Job status + artifact dir |
 
 ## Storage backends
 

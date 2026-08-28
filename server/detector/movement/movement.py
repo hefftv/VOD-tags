@@ -80,13 +80,14 @@ class Pipeline:
 
 class MovementDetector:
 
-    def __init__(self, channel_name: str, stream_features: str, stream_dataframe_name: str):
+    def __init__(self, channel_name: str, stream_features: str, stream_dataframe_name: str, artifact_dir: str):
 
         self.pipeline = Pipeline(Config.MODEL_PATH)
         self.classifier = self.pipeline.loadModel()
 
         self.channel_name = channel_name
         self.stream_dataframe_name = stream_dataframe_name
+        self.movement_csv_path = os.path.join(artifact_dir, 'movement.csv')
 
         self.stream_features = stream_features
         self.seconds = 10
@@ -126,7 +127,7 @@ class MovementDetector:
         
             self.stream_features.loc[i, 'movement_amount'] += self.classifier.predict(optflow)[0][0]
         
-        self.stream_features.to_csv(f'{self.stream_dataframe_name}_movement.csv',  index = None) # change later to uid
+        self.stream_features.to_csv(self.movement_csv_path, index=None)
         return hsv
 
     def start(self, start_time):

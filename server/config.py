@@ -59,6 +59,25 @@ class Config:
         return os.path.join(cls.streams_root, 'recorded', channel_name, filename)
 
     @classmethod
+    def job_artifact_dir(cls, stream_uid: str) -> str:
+        return os.path.join(cls.streams_root, 'jobs', stream_uid)
+
+    @classmethod
+    def ensure_job_artifact_dir(cls, stream_uid: str) -> str:
+        path = cls.job_artifact_dir(stream_uid)
+        os.makedirs(path, exist_ok=True)
+        os.makedirs(os.path.join(path, 'clips'), exist_ok=True)
+        return path
+
+    @classmethod
+    def feature_csv_path(cls, stream_uid: str, name: str) -> str:
+        return os.path.join(cls.job_artifact_dir(stream_uid), f'{name}.csv')
+
+    @classmethod
+    def merged_csv_path(cls, stream_uid: str) -> str:
+        return os.path.join(cls.job_artifact_dir(stream_uid), 'merged.csv')
+
+    @classmethod
     def panns_labels_path(cls):
         return os.path.join(cls.panns_data_dir, 'class_labels_indices.csv')
 

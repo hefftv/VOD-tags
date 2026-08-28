@@ -12,8 +12,9 @@ import threading
 
 class HighlightDetector:
 
-    def __init__(self, channel_name: str, stream_dataframe_name: str):
+    def __init__(self, channel_name: str, stream_dataframe_name: str, artifact_dir: str):
         self.channel_name = channel_name
+        self.artifact_dir = artifact_dir
 
         default_columns = ['start_time', 'end_time']
         chat_columns = ['message_counts', 'positive_message_count', 'negative_message_count']
@@ -29,9 +30,15 @@ class HighlightDetector:
         self.sound_features = pd.DataFrame([], columns = default_columns + sound_columns)
         self.movement_features = pd.DataFrame([], columns = default_columns + movement_columns)
 
-        self.chat_detector = ChatDetector(self.channel_name, self.chat_features, stream_dataframe_name)
-        self.sound_detector = SoundDetector(self.channel_name, self.sound_features, stream_dataframe_name)
-        self.movement_detector = MovementDetector(self.channel_name, self.movement_features, stream_dataframe_name)
+        self.chat_detector = ChatDetector(
+            self.channel_name, self.chat_features, stream_dataframe_name, artifact_dir,
+        )
+        self.sound_detector = SoundDetector(
+            self.channel_name, self.sound_features, stream_dataframe_name, artifact_dir,
+        )
+        self.movement_detector = MovementDetector(
+            self.channel_name, self.movement_features, stream_dataframe_name, artifact_dir,
+        )
 
 
     def start(self):

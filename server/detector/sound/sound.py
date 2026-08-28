@@ -16,10 +16,11 @@ from config import Config
 
 class SoundDetector:
 
-    def __init__(self, channel_name: str, stream_features: str, stream_dataframe_name: str):
+    def __init__(self, channel_name: str, stream_features: str, stream_dataframe_name: str, artifact_dir: str):
 
         self.channel_name = channel_name
         self.stream_dataframe_name = stream_dataframe_name
+        self.sound_csv_path = os.path.join(artifact_dir, 'sound.csv')
 
         self.stream_features = stream_features
         self.seconds = 10
@@ -53,7 +54,7 @@ class SoundDetector:
         
             self.stream_features.loc[i, 'sound_loudness'] += max_sound
 
-        self.stream_features.to_csv(f'{self.stream_dataframe_name}_sound.csv',  index = None) # change later to uid
+        self.stream_features.to_csv(self.sound_csv_path, index=None)
 
     def start(self, start_time):
         video_path = Config.recorded_stream_path(

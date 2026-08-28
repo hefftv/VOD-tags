@@ -3,17 +3,13 @@
 #####################
 
 import os
-import time
-import uuid
-from multiprocessing import Process
 
 import flask
 from flask import request
 
 os.environ['TOKENIZERS_PARALLELISM'] = 'true'
 
-from config import Config
-from processor import StreamProcessor
+from jobs import get_job, list_jobs, start_stream_job
 
 app = flask.Flask(__name__)
 app.config['DEBUG'] = os.environ.get('FLASK_DEBUG', 'True').lower() in (
@@ -28,51 +24,29 @@ def health():
     return {'status': 'ok'}
 
 
+@app.route('/jobs', methods=['GET'])
+def jobs_index():
+    return {'jobs': list_jobs()}
+
+
+@app.route('/jobs/<job_id>', methods=['GET'])
+def jobs_show(job_id):
+    job = get_job(job_id)
+    if job is None:
+        return {'error': 'job not found'}, 404
+    return job.to_dict()
+
+
 @app.route('/process_stream', methods=['GET'])
 def process_stream():
-    saved_prediction_indices = []
     stream_link = request.args.get('stream_link')
     user_name = request.args.get('user_name')
-    stream_uid = str(uuid.uuid1())
-    file_path = Config.recorded_stream_path(stream_link, f'{stream_uid}.mp4')
 
-    stream_processor = StreamProcessor(stream_link, user_name, stream_uid)
-    download_process = stream_processor.download_stream()
+    if not stream_link or not user_name:
+        return {'error': 'stream_link and user_name are required'}, 400
 
-    print(f'Working for user: {user_name} and stream {stream_link}')
-    print(download_process.pid)
-
-    while not os.path.isfile(file_path):
-        time.sleep(1)
-
-    prediction_process = Process(target=stream_processor.get_predictions)
-    prediction_process.start()
-
-    cut_process = None
-    while True:
-        time_start, duration, saved_prediction_indices = (
-            stream_processor.check_predictions(saved_prediction_indices)
-        )
-
-        if time_start is not None:
-            cut_process = stream_processor.extract_time_frame(time_start, duration)
-            if cut_process is not None:
-                cut_process.wait()
-            public_clip_path = stream_processor.publish_clip()
-            stream_processor.send_clip_to_webapp(public_clip_path)
-            if Config.uses_gcs():
-                print('Clip added to google storage!')
-            else:
-                print('Clip published locally!')
-
-        time.sleep(30)
-
-    os.remove(f'{stream_uid}.csv')
-    stream_processor.process_killer()
-    if cut_process is not None:
-        cut_process.terminate()
-    download_process.terminate()
-    return ''
+    job = start_stream_job(stream_link, user_name)
+    return job.to_dict(), 202
 
 
 if __name__ == '__main__':

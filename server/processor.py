@@ -31,10 +31,13 @@ class StreamProcessor:
         self.stream_link = stream_link
         self.user_name = user_name
         self.stream_dataframe_name = stream_dataframe_name
+        Config.ensure_job_artifact_dir(stream_dataframe_name)
+        self.artifact_dir = Config.job_artifact_dir(stream_dataframe_name)
 
         self.highlight_detector = HighlightDetector(
             self.stream_link,
             self.stream_dataframe_name,
+            self.artifact_dir,
         )
 
         self.path_to_folder = (
@@ -65,22 +68,22 @@ class StreamProcessor:
     def check_predictions(self, saved_prediction_indices):
         start_time, duration = None, None
 
-        if not os.path.isfile(f'{self.stream_dataframe_name}_chat.csv'):
+        if not os.path.isfile(Config.feature_csv_path(self.stream_dataframe_name, 'chat')):
             return start_time, duration, saved_prediction_indices
 
-        if not os.path.isfile(f'{self.stream_dataframe_name}_movement.csv'):
+        if not os.path.isfile(Config.feature_csv_path(self.stream_dataframe_name, 'movement')):
             return start_time, duration, saved_prediction_indices
 
-        if not os.path.isfile(f'{self.stream_dataframe_name}_sound.csv'):
+        if not os.path.isfile(Config.feature_csv_path(self.stream_dataframe_name, 'sound')):
             return start_time, duration, saved_prediction_indices
 
-        chat = pd.read_csv(f'{self.stream_dataframe_name}_chat.csv')
-        movement = pd.read_csv(f'{self.stream_dataframe_name}_movement.csv')
-        sound = pd.read_csv(f'{self.stream_dataframe_name}_sound.csv')
+        chat = pd.read_csv(Config.feature_csv_path(self.stream_dataframe_name, 'chat'))
+        movement = pd.read_csv(Config.feature_csv_path(self.stream_dataframe_name, 'movement'))
+        sound = pd.read_csv(Config.feature_csv_path(self.stream_dataframe_name, 'sound'))
 
         data = pd.merge(chat, movement.drop(columns=['end_time']), on='start_time')
         data = pd.merge(data, sound.drop(columns=['end_time']), on='start_time')
-        data.to_csv(f'{self.stream_dataframe_name}.csv', index=None)
+        data.to_csv(Config.merged_csv_path(self.stream_dataframe_name), index=None)
 
         sc = load('standard_scaler.joblib')
         data.iloc[:, 2:] = sc.transform(data.iloc[:, 2:].values)

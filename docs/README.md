@@ -12,6 +12,7 @@ This folder contains the full documentation for **VOD Tags** (Twitch Stream High
 | [ML Pipeline](wiki/ML-Pipeline.md) | Feature extractors and metamodel |
 | [Deployment](wiki/Deployment.md) | GCP, local containers, and cloud-generic |
 | [Configuration](wiki/Configuration.md) | Environment variables and config mapping |
+| [Competitive Research](wiki/Competitive-Research.md) | Comparable tools, patterns, adoption roadmap |
 
 ## Publish to GitHub Wiki
 

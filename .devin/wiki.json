@@ -1,0 +1,13 @@
+{
+  "repo_notes": "VOD Tags detects Twitch live-stream highlights using multimodal ML (chat sentiment, PANNs audio tags, optical-flow movement) and a logistic regression metamodel. Preserve documentation for: (1) GCP default path (GCE + gsutil + public GCS), (2) local Docker Compose profile full, (3) web↔ML HTTP callbacks, (4) server/processor.py job pipeline and server/detector/ feature extractors.",
+  "pages": [
+    { "title": "Architecture", "path": "docs/wiki/Architecture.md" },
+    { "title": "Process Flow", "path": "docs/wiki/Process-Flow.md" },
+    { "title": "ML Pipeline", "path": "docs/wiki/ML-Pipeline.md" },
+    { "title": "Deployment", "path": "docs/wiki/Deployment.md" },
+    { "title": "Configuration", "path": "docs/wiki/Configuration.md" },
+    { "title": "Competitive Research", "path": "docs/wiki/Competitive-Research.md" },
+    { "title": "Web App", "path": "webapp/" },
+    { "title": "ML Server", "path": "server/" }
+  ]
+}

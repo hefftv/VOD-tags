@@ -102,4 +102,5 @@ Historical branches (metamodel training, movement POC) remain in git; `main` now
 ## Related reading
 
 - [Original blog post](https://artkulakov.medium.com/how-i-created-an-app-for-live-stream-highlight-detection-for-twitch-532f4027987e)
+- [Competitive Research](Competitive-Research) — comparable tools and adoption roadmap
 - [Repository README](https://github.com/hefftv/VOD-tags/blob/main/README.md)

@@ -6,4 +6,5 @@
 - [ML Pipeline](ML-Pipeline)
 - [Deployment](Deployment)
 - [Configuration](Configuration)
+- [Competitive Research](Competitive-Research)
 - [Repository README](https://github.com/hefftv/VOD-tags/blob/main/README.md)

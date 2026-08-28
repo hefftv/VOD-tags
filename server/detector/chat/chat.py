@@ -9,10 +9,11 @@ import pandas as pd
 
 class ChatDetector:
 
-    def __init__(self, channel_name, stream_features, stream_dataframe_name):
+    def __init__(self, channel_name, stream_features, stream_dataframe_name, artifact_dir):
         self.classifier = pipeline('sentiment-analysis')
         self.channel_name = channel_name
         self.stream_dataframe_name = stream_dataframe_name
+        self.chat_csv_path = os.path.join(artifact_dir, 'chat.csv')
 
         self.stream_features = stream_features
         self.seconds = 10
@@ -45,7 +46,7 @@ class ChatDetector:
             if message_sentiment[0]['label'] == 'POSITIVE':
                 self.stream_features.loc[i, 'positive_message_count'] += 1
         
-        self.stream_features.to_csv(f'{self.stream_dataframe_name}_chat.csv',  index = None) # change later to uid
+        self.stream_features.to_csv(self.chat_csv_path, index=None)
 
 
     def start(self, start_time):

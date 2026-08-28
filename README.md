@@ -29,6 +29,7 @@ Full architecture, process flows, and deployment guides live in the project docs
 | ML pipeline | [`docs/wiki/ML-Pipeline.md`](docs/wiki/ML-Pipeline.md) |
 | Deployment | [`docs/wiki/Deployment.md`](docs/wiki/Deployment.md) |
 | Configuration | [`docs/wiki/Configuration.md`](docs/wiki/Configuration.md) |
+| Competitive Research | [`docs/wiki/Competitive-Research.md`](docs/wiki/Competitive-Research.md) |
 
 ### System overview
 
