@@ -51,7 +51,27 @@ To start the server in the root directory of the repository, enter the command:
 
 `python server.py`
 
+## Local containers (web app)
 
+Works with **Docker Compose** or **Podman Compose**. Copy env defaults, then bring the stack up with either engine:
+
+```bash
+cp .env.example .env   # set TWITCH_* (optional); ML host optional
+
+# Docker
+docker compose up --build
+
+# Podman (either form)
+podman compose up --build
+# or: podman-compose up --build
+```
+
+Open http://localhost:8000. SQLite persists in the `sqlite_data` volume. Without `ML_SERVER_HOST`, the UI still runs; highlight generation needs an external ML server (Phase 2).
+
+Notes for Podman:
+- Image is pulled as `docker.io/library/python:3.11-slim` and tagged `localhost/vod-tags-web:local`.
+- Rootless Podman is fine on port 8000; named volumes avoid SELinux bind-mount `:Z` issues.
+- On Windows/macOS, start a Podman machine first (`podman machine start`).
 
 ## App overview
 
