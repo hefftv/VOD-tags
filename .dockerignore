@@ -11,4 +11,5 @@ experiments/
 LICENSE
 links.txt
 webapp/db.sqlite3
+webapp/data/
 **/.DS_Store

@@ -19,5 +19,49 @@ services:
     volumes:
       - sqlite_data:/app/webapp/data
 
+  ml-server:
+    profiles: [full]
+    build:
+      context: .
+      dockerfile: Dockerfile.ml
+    image: localhost/vod-tags-ml:local
+    ports:
+      - "5555:5555"
+    environment:
+      ML_SERVER_PORT: ${ML_SERVER_PORT:-5555}
+      STREAMS_ROOT: /streams
+      CLIPS_ROOT: /clips
+      CLIP_PUBLIC_BASE_URL: ${CLIP_PUBLIC_BASE_URL:-http://localhost:8080}
+      CLIP_STORAGE_BACKEND: ${CLIP_STORAGE_BACKEND:-local}
+      WEBAPP_HOST: web
+      WEBAPP_PORT: "8000"
+      GCS_BUCKET_NAME: ${GCS_BUCKET_NAME:-YOUR-GOOGLE-CLOUD-STORAGE-BUCKET-NAME}
+      WEBAPP_PUBLIC_IP: ${WEBAPP_PUBLIC_IP:-}
+      WEBAPP_PUBLIC_PORT: ${WEBAPP_PUBLIC_PORT:-8000}
+      TWITCH_CLIENT_ID: ${TWITCH_CLIENT_ID:-}
+      TWITCH_SECRET_ID: ${TWITCH_SECRET_ID:-}
+      TWITCH_CHAT_NICKNAME: ${TWITCH_CHAT_NICKNAME:-}
+      TWITCH_OAUTH_TOKEN: ${TWITCH_OAUTH_TOKEN:-}
+      PANNS_DATA_DIR: /app/panns_data
+    volumes:
+      - stream_data:/streams
+      - clip_data:/clips
+    depends_on:
+      web:
+        condition: service_started
+      clips:
+        condition: service_started
+
+  clips:
+    profiles: [full]
+    image: docker.io/library/nginx:alpine
+    ports:
+      - "8080:8080"
+    volumes:
+      - clip_data:/usr/share/nginx/html:ro
+      - ./nginx/clips.conf:/etc/nginx/conf.d/default.conf:ro
+
 volumes:
   sqlite_data:
+  stream_data:
+  clip_data:

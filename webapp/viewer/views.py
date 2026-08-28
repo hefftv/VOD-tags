@@ -90,8 +90,8 @@ def add_stream(request):
     PARAMS = {'stream_link':stream_link, 'user_name': request.user.username}
 
     try:
-        requests.get(url = URL, params = PARAMS, timeout = 1)
-    except:
+        requests.get(url=URL, params=PARAMS, timeout=5)
+    except requests.RequestException:
         pass
 
     return redirect('/')
@@ -110,7 +110,7 @@ def add_clip(request):
     # add new clip to database           
     StreamHighlight.objects.create(clip_link = clip_link, stream_link = stream_link, user_id = user_name)
 
-    return redirect('/')
+    return JsonResponse({'status': 'ok'})
 
 def stream(request, stream_id):
     '''
