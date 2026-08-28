@@ -1,5 +1,6 @@
-django
-numpy
-pandas
-twitch-python
-rx
+django==5.2.17
+numpy==2.4.6
+pandas==3.0.5
+twitch-python==0.0.20
+rx==3.2.0
+requests==2.32.5
